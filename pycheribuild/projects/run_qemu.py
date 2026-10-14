@@ -145,6 +145,9 @@ class LaunchQEMUBase(SimpleProject):
         "use-u-boot", default=False, help="Boot using U-Boot for UEFI if supported (only RISC-V)"
     )
     cvtrace = BoolConfigOption("cvtrace", help="Use binary trace output instead of textual")
+    bbv = BoolConfigOption("bbv", help="Generate textual basic block vectors to be used for SimPoints analysis")
+    champsim = BoolConfigOption("champsim", help="ChampSim Trace format")
+    champsimcheri = BoolConfigOption("champsimcheri", help="ChampSim Cheri Trace format")
 
     @classmethod
     def setup_config_options(cls, default_ssh_port: "Optional[int]" = None, **kwargs):
@@ -455,6 +458,12 @@ class LaunchQEMUBase(SimpleProject):
 
         if self.cvtrace:
             logfile_options += ["-cheri-trace-format", "cvtrace"]
+        if self.bbv:
+            logfile_options += ["-cheri-trace-format", "bbv"]
+        if self.champsim:
+            logfile_options += ["-cheri-trace-format", "champsim"]
+        if self.champsimcheri:
+            logfile_options += ["-cheri-trace-format", "champsimcheri"]
         if self.disk_image is not None and not self.disk_image.exists():
             disk_image_target_name = self.disk_image_project.target if self.disk_image_project is not None else None
             disk_image_xtarget = (
@@ -934,7 +943,7 @@ class LaunchCheriBSD(_RunMultiArchFreeBSDImage):
 
 class LaunchDmQEMU(LaunchCheriBSD):
     target = "run-dm"
-    forward_ssh_port = False
+    forward_ssh_port = True
     _enable_smbfs_support = False
     _add_virtio_rng = False
     hide_options_from_help = True
